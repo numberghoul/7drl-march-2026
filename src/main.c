@@ -1,28 +1,16 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdint.h>
-#include "raylib.h"
-#include "raymath.h"
+#include "game.h"
 
 int main(void)
 {
-	int screenWidth = 1280;
-	int screenHeight = 720;
+	ng_game game = init_game();
+	int exitCode;
 
-	InitWindow(screenWidth, screenHeight, "7drl-march2026");
-
-	SetTargetFPS(60);
-
-	while (!WindowShouldClose())    // Detect window close button or ESC key
+	while(exitCode == 0)
 	{
-		BeginDrawing();
-
-		ClearBackground(BLACK);
-
-		EndDrawing();
+		exitCode = run_game(game);
 	}
 
-	CloseWindow();
+	exit_game(exitCode);
 
-	return 0;
+	return exitCode;
 }

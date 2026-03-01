@@ -18,7 +18,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${OUTPUT_DIRECTORY}")
 
 # Glob source and headers
 file(GLOB_RECURSE SOURCES "src/*.c")
-file(GLOB_RECURSE HEADERS "include/*.h")
+file(GLOB_RECURSE HEADERS "include/*.h src/*.h")
 
 # Fetch Raylib from GitHub
 include(FetchContent)

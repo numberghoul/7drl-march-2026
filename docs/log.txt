@@ -1,1 +1,4 @@
-03-01-2026 - Project created, official start and first push
+03-01-2026 10:07am - Project created, official start and first push
+			12:10pm - Lunch Break
+			1:00pm - Start
+			3:33pm - initial functions for window creation made and abstracted. Next up, render text characters onto screen. taking a break for now.
