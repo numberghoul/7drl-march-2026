@@ -10,7 +10,7 @@ int main(void)
 		exitCode = run_game(game);
 	}
 
-	exit_game(exitCode);
+	exit_game(game, exitCode);
 
 	return exitCode;
 }

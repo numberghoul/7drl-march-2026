@@ -69,8 +69,9 @@ int run_game(ng_game game)
 	return exitCode;
 }
 
-void exit_game(int exitCode)
+void exit_game(ng_game game, int exitCode)
 {
+	unload_bmpfont(game.mainFont);
 	CloseWindow();
 
 	printf("Exited with code %d", exitCode);

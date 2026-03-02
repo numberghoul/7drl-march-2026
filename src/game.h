@@ -38,6 +38,6 @@ int render(ng_game game);
 
 ng_game init_game(const char* title, int virtualWidth, int virtualHeight); 
 int run_game(ng_game game);
-void exit_game(int exitCode);
+void exit_game(ng_game game, int exitCode);
 
 #endif
