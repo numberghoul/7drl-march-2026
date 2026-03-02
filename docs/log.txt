@@ -1,4 +1,8 @@
 03-01-2026 10:07am - Project created, official start and first push
 			12:10pm - Lunch Break
+
 			1:00pm - Start
 			3:33pm - initial functions for window creation made and abstracted. Next up, render text characters onto screen. taking a break for now.
+			
+			6:08pm - Start
+			8:05pm - Ending for the night. image fonts loading and drawing with transparency (weird pink color on a char in the font I'm using but not a big deal tbh). Next up need to create the function to print strings using that font, and then get sprite atlas' loading and drawing.

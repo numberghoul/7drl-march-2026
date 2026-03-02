@@ -2,8 +2,8 @@
 
 int main(void)
 {
-	ng_game game = init_game();
-	int exitCode;
+	ng_game game = init_game("7drl-march2026", 256, 144);
+	int exitCode = 0;
 
 	while(exitCode == 0)
 	{
