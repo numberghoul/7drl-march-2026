@@ -6,3 +6,6 @@
 			
 			6:08pm - Start
 			8:05pm - Ending for the night. image fonts loading and drawing with transparency (weird pink color on a char in the font I'm using but not a big deal tbh). Next up need to create the function to print strings using that font, and then get sprite atlas' loading and drawing.
+
+03-02-2026 10:10pm - Forgot to log start time, but got some text rendering 
+					going now.

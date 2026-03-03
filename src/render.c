@@ -1,6 +1,37 @@
 #include "game.h"
 #include "raylib.h"
+#include "raymath.h"
 #include <stdalign.h>
+
+void print_char(char c, int x, int y, int size, ng_bmpfont font, Color color)
+{
+	Rectangle src = {((int)c % font.columns) * font.charWidth,
+						((int)c / font.columns) * font.charWidth,
+						font.charWidth, font.charWidth};
+
+	Rectangle dest = {x, y, size, size};
+
+	DrawTexturePro(font.fontAtlas, src, dest, Vector2Zero(), 0.0f, color);
+}
+
+void print_char_vec2(char c, Vector2 pos, int size, ng_bmpfont font, Color color)
+{
+	print_char(c, pos.x, pos.y, size, font, color);
+}
+
+void print_string(const char* text, int x, int y, int size, ng_bmpfont font, Color color)
+{
+	int i = 0;
+	while(text[i] != '\0')
+	{
+		print_char(text[i], x + (i * size), y, size, font, color);
+		i++;
+	}
+}
+void print_string_vec2(const char* text, Vector2 pos, int size, ng_bmpfont font, Color color)
+{
+	print_string(text, pos.x, pos.y, size, font, color);
+}
 
 ng_bmpfont load_bmpfont(const char* path, int charWidth)
 {

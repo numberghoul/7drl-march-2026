@@ -12,7 +12,9 @@ int render(ng_game game)
 {
 	ClearBackground(BLACK);
 
-	DrawTexture(game.mainFont.fontAtlas, 0, 0, WHITE);
+	print_string("--------", 12*16, 0, game.mainFont.charWidth, game.mainFont, PURPLE);
+	print_string("############", 0, 0, 16, game.mainFont, ORANGE);
+	print_string("############", 0, 8 * 16, 16, game.mainFont, ORANGE);
 
 	return 0;
 }
