@@ -79,6 +79,7 @@ ng_renderer init_renderer(const char* title, int winWidth, int winHeight, int vi
 	//init window
 	InitWindow(r.winWidth, r.winHeight, "7drl-march2026");
 	SetTargetFPS(60);
+	ChangeDirectory(GetApplicationDirectory());
 
 	r.frameTexture = LoadRenderTexture(r.virtualWidth, r.virtualHeight);
 
