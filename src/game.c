@@ -12,9 +12,25 @@ int render(ng_game game)
 {
 	ClearBackground(BLACK);
 
-	print_string("--------", 12*16, 0, game.mainFont.charWidth, game.mainFont, PURPLE);
-	print_string("############", 0, 0, 16, game.mainFont, ORANGE);
-	print_string("############", 0, 8 * 16, 16, game.mainFont, ORANGE);
+	//print_string("--------", 12*16, 0, game.mainFont.charWidth, game.mainFont, PURPLE);
+	print_box(12 * 2, 0, 8, 18, game.mainFont, ORANGE);
+	print_string("Test", 12 * 2 + 1, 1, 8, game.mainFont, WHITE);
+
+	draw_room(game.testRoom, game.tileset);
+
+	draw_tile(52, 5, 0, game.tileset, WHITE);
+	draw_tile(53, 6, 0, game.tileset, WHITE);
+
+	draw_tile(68, 5, 8, game.tileset, WHITE);
+	draw_tile(69, 6, 8, game.tileset, WHITE);
+
+	draw_tile(4, 0, 3, game.tileset, WHITE);
+	draw_tile(20, 0, 4, game.tileset, WHITE);
+	draw_tile(36, 0, 5, game.tileset, WHITE);
+
+	draw_tile(5, 11, 3, game.tileset, WHITE);
+	draw_tile(21, 11, 4, game.tileset, WHITE);
+	draw_tile(37, 11, 5, game.tileset, WHITE);
 
 	return 0;
 }
@@ -26,6 +42,10 @@ ng_game init_game(const char* title, int virtualWidth, int virtualHeight)
 	newGame.renderer = init_renderer(title, 1280, 720, virtualWidth, virtualHeight);
 
 	newGame.mainFont = load_bmpfont("assets/font_8px.png", 8);
+
+	newGame.tileset = load_tileset("assets/dungeon_16px.png", 16);
+
+	newGame.testRoom = generate_room(0);
 
 	return newGame;
 }
