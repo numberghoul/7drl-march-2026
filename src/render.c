@@ -158,7 +158,7 @@ void draw_map(ng_level level, ng_tileset tileset)
 			int roomIndex = coord_index(x, y, LEVEL_WIDTH);
 			ng_room currentRoom = level.rooms[roomIndex];
 
-			if(currentRoom.active)
+			if(currentRoom.active && currentRoom.visible)
 			{
 				int gridX = x;
 				int gridY = y;
@@ -185,10 +185,10 @@ void draw_map(ng_level level, ng_tileset tileset)
 					draw_tile(MAP_DOORH, gridX, gridY, false, false, tileset, WHITE);
 				}
 
-				if(currentRoom.start)
-					draw_tile(0, gridX, gridY, false, false, tileset, GREEN);
+				if(currentRoom.start && level.id != 0)
+					draw_tile(MAP_UP, gridX, gridY, false, false, tileset, WHITE);
 				if(currentRoom.end)
-					draw_tile(0, gridX, gridY, false, false, tileset, RED);
+					draw_tile(MAP_DOWN, gridX, gridY, false, false, tileset, WHITE);
 			}
 		}
 	}

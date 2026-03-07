@@ -12,3 +12,6 @@
 
 03-04-2026 6ish pm - Start
 			9:45PM - Got tiles rendering from room struct. Room struct is constructing from prefab csv in assets folder.
+
+03-06-2026 11:51pm - Forgot to log start, but I've got a dungeon now.
+			1:20am - Made changes to sprites and added fog of war for map

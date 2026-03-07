@@ -35,6 +35,7 @@ ng_room generate_room(int prefabId, bool start, bool end)
     }
 
     newRoom.active = true;
+    newRoom.visible = false;
     newRoom.start = start;
     newRoom.end = end;
     return newRoom;
@@ -60,6 +61,7 @@ ng_level generate_level(float difficulty)
 
 	roomsCreated[0] = currentRoom;
 	newLevel.rooms[currentRoom] = generate_room(0, true, false);
+	newLevel.rooms[currentRoom].visible = true;
 	Vector2 position = index_vec2(currentRoom, LEVEL_WIDTH);
 
 	int count = 1;
@@ -178,5 +180,6 @@ void generate_dungeon(ng_dungeon* dungeon, int levels)
 		}
 
 		dungeon->levels[i] = generate_level(difficulty);
+		dungeon->levels[i].id = i;
 	}
 }

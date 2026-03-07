@@ -35,6 +35,8 @@
 #define MAP_ROOM 49
 #define MAP_DOORV 50
 #define MAP_DOORH 51
+#define MAP_DOWN 16
+#define MAP_UP 32
 
 // HELPER_C
 int vec2_index(Vector2 v2, int width);
@@ -54,12 +56,14 @@ typedef struct {
 	ng_door doors[4];
 
 	bool active;
+	bool visible;
 	bool start;
 	bool end;
 } ng_room;
 
 typedef struct {
 	ng_room rooms[MAX_ROOMS];
+	int id;
 	int startRoom;
 	int endRoom;
 } ng_level;
