@@ -2,6 +2,7 @@
 #include "raylib.h"
 #include "raymath.h"
 #include <stdalign.h>
+#include <stdbool.h>
 
 void print_char(unsigned char c, int x, int y, int size, ng_bmpfont font, Color color)
 {
@@ -113,20 +114,28 @@ int unload_tileset(ng_tileset tileset)
 	return 0;
 }
 
-void draw_tile(int id, int x, int y, ng_tileset tileset, Color color)
+void draw_tile(int id, int x, int y, bool flipX, bool flipY, ng_tileset tileset, Color color)
 {
+	int xmod = 1;
+	int ymod = 1;
+
+	if (flipX)
+		xmod = -1;
+	if (flipY)
+		ymod = -1;
+
 	Rectangle src = {(id % tileset.columns) * tileset.tileWidth,
 						(id / tileset.columns) * tileset.tileWidth,
-						tileset.tileWidth, tileset.tileWidth};
+						tileset.tileWidth * xmod, tileset.tileWidth * ymod};
 
 	Rectangle dest = {x * tileset.tileWidth, y * tileset.tileWidth, tileset.tileWidth, tileset.tileWidth};
 
 	DrawTexturePro(tileset.tileAtlas, src, dest, Vector2Zero(), 0.0f, color);
 }
 
-void draw_tile_vec2(int id, Vector2 pos, ng_tileset tileset, Color color)
+void draw_tile_vec2(int id, Vector2 pos, bool flipX, bool flipY, ng_tileset tileset, Color color)
 {
-	draw_tile(id, pos.x, pos.y, tileset, color);
+	draw_tile(id, pos.x, pos.y, flipX, flipY, tileset, color);
 }
 
 void draw_room(ng_room room, ng_tileset tileset)
@@ -136,7 +145,52 @@ void draw_room(ng_room room, ng_tileset tileset)
 		int x = i % ROOM_WIDTH;
 		int y = i / ROOM_WIDTH;
 
-		draw_tile(room.tiles[i], x, y, tileset, WHITE);
+		draw_tile(room.tiles[i], x, y, false, false, tileset, WHITE);
+	}
+}
+
+void draw_map(ng_level level, ng_tileset tileset)
+{
+	for (int y = 0; y < LEVEL_HEIGHT; y++)
+	{
+		for (int x = 0; x < LEVEL_WIDTH; x++)
+		{
+			int roomIndex = coord_index(x, y, LEVEL_WIDTH);
+			ng_room currentRoom = level.rooms[roomIndex];
+
+			if(currentRoom.active)
+			{
+				int gridX = x;
+				int gridY = y;
+
+				draw_tile(MAP_ROOM, gridX, gridY, false, false, tileset, WHITE);
+
+				if (currentRoom.doors[DIR_NORTH].active)
+				{
+					draw_tile(MAP_DOORV, gridX, gridY, false, true, tileset, WHITE);
+				}
+
+				if (currentRoom.doors[DIR_SOUTH].active)
+				{
+					draw_tile(MAP_DOORV, gridX, gridY, false, false, tileset, WHITE);
+				}
+
+				if (currentRoom.doors[DIR_EAST].active)
+				{
+					draw_tile(MAP_DOORH, gridX, gridY, true, false, tileset, WHITE);
+				}
+
+				if (currentRoom.doors[DIR_WEST].active)
+				{
+					draw_tile(MAP_DOORH, gridX, gridY, false, false, tileset, WHITE);
+				}
+
+				if(currentRoom.start)
+					draw_tile(0, gridX, gridY, false, false, tileset, GREEN);
+				if(currentRoom.end)
+					draw_tile(0, gridX, gridY, false, false, tileset, RED);
+			}
+		}
 	}
 }
 
