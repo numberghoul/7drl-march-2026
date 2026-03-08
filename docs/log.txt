@@ -15,3 +15,6 @@
 
 03-06-2026 11:51pm - Forgot to log start, but I've got a dungeon now.
 			1:20am - Made changes to sprites and added fog of war for map
+
+03-07-2026 2:38pm - Start, lets make some gameplay
+			7:22pm - Dungeon generating and traversable. Going to build on windows and have some friends try it out.

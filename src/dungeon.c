@@ -1,6 +1,7 @@
 #include "game.h"
 #include <raylib.h>
 #include <raymath.h>
+#include <stdbool.h>
 #include <string.h>
 #include <stdio.h>
 
@@ -12,14 +13,20 @@ ng_room generate_room(int prefabId, bool start, bool end)
 
     if (prefabData != NULL)
     {
+    	for (int i = 0; prefabData[i] != '\0'; i++) {
+            if (prefabData[i] == '\n' || prefabData[i] == '\r') {
+                prefabData[i] = ',';
+            }
+        }
+
         int count = 0;
         // split by comma
         const char **values = TextSplit(prefabData, ',', &count);
 
         for (int i = 0; i < count; i++)
         {
-            // convert and store
-            if (tileCount < MAX_TILES)
+            // Only process if the string isn't empty (handles trailing commas/newlines)
+            if (values[i][0] != '\0' && tileCount < MAX_TILES)
             {
                 newRoom.tiles[tileCount] = TextToInteger(values[i]);
                 tileCount++;
@@ -32,6 +39,11 @@ ng_room generate_room(int prefabId, bool start, bool end)
     {
     	newRoom.doors[i].connectedRoom = -1;
     	newRoom.doors[i].active = false;
+    }
+
+    for (int i = 0; i < MAX_ACTORS_ROOM; i++)
+    {
+    	newRoom.actors[i] = -1;
     }
 
     newRoom.active = true;
@@ -60,7 +72,7 @@ ng_level generate_level(float difficulty)
 	int currentRoom = startRoom;
 
 	roomsCreated[0] = currentRoom;
-	newLevel.rooms[currentRoom] = generate_room(0, true, false);
+	newLevel.rooms[currentRoom] = generate_room(ROOM_START, true, false);
 	newLevel.rooms[currentRoom].visible = true;
 	Vector2 position = index_vec2(currentRoom, LEVEL_WIDTH);
 
@@ -130,7 +142,11 @@ ng_level generate_level(float difficulty)
         furthestRoom = roomsCreated[count - 1];
     }
 
-	newLevel.rooms[furthestRoom].end = true;
+    ng_room endCopy = newLevel.rooms[furthestRoom];
+    newLevel.rooms[furthestRoom] = generate_room(ROOM_END, false, true);
+
+    for (int i = 0; i < 4; i++)
+    	newLevel.rooms[furthestRoom].doors[i] = endCopy.doors[i];
 
 	newLevel.startRoom = startRoom;
 	newLevel.endRoom = furthestRoom;
@@ -159,6 +175,36 @@ ng_level generate_level(float difficulty)
         	    newLevel.rooms[neighborId].doors[opposite_dir(dir)].active = true;
            		newLevel.rooms[neighborId].doors[opposite_dir(dir)].connectedRoom = randId;
         	}
+		}
+	}
+
+	// update tilemaps for doors
+	for(int i = 0; i < MAX_ROOMS; i++)
+	{
+		if(newLevel.rooms[i].active)
+		{
+			if (newLevel.rooms[i].doors[DIR_NORTH].active)
+			{
+				newLevel.rooms[i].tiles[coord_index(5, 0, LEVEL_WIDTH)] = TILE_DOORV_TL;
+				newLevel.rooms[i].tiles[coord_index(6, 0, LEVEL_WIDTH)] = TILE_DOORV_TR;
+			}
+			if (newLevel.rooms[i].doors[DIR_SOUTH].active)
+			{
+				newLevel.rooms[i].tiles[coord_index(5, 8, LEVEL_WIDTH)] = TILE_DOORV_BL;
+				newLevel.rooms[i].tiles[coord_index(6, 8, LEVEL_WIDTH)] = TILE_DOORV_BR;
+			}
+			if (newLevel.rooms[i].doors[DIR_WEST].active)
+			{
+				newLevel.rooms[i].tiles[coord_index(0, 3, LEVEL_WIDTH)] = TILE_DOORH_LT;
+				newLevel.rooms[i].tiles[coord_index(0, 4, LEVEL_WIDTH)] = TILE_DOORH_LC;
+				newLevel.rooms[i].tiles[coord_index(0, 5, LEVEL_WIDTH)] = TILE_DOORH_LB;
+			}
+			if (newLevel.rooms[i].doors[DIR_EAST].active)
+			{
+				newLevel.rooms[i].tiles[coord_index(11, 3, LEVEL_WIDTH)] = TILE_DOORH_RT;
+				newLevel.rooms[i].tiles[coord_index(11, 4, LEVEL_WIDTH)] = TILE_DOORH_RC;
+				newLevel.rooms[i].tiles[coord_index(11, 5, LEVEL_WIDTH)] = TILE_DOORH_RB;
+			}
 		}
 	}
 
