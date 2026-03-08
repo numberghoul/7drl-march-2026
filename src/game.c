@@ -24,91 +24,112 @@ int update(ng_game* game, float dt)
 	case STATE_MENU:
 		break;
 	case STATE_PLAY:
-	
-	if(IsKeyPressed(KEY_UP))
-	{
-		moveDir = DIR_NORTH;
-		checkMove = true;
-	}
-	if(IsKeyPressed(KEY_RIGHT))
-	{
-		moveDir = DIR_EAST;
-		checkMove = true;
-	}
-	if(IsKeyPressed(KEY_DOWN))
-	{
-		moveDir = DIR_SOUTH;
-		checkMove = true;
-	}
-	if(IsKeyPressed(KEY_LEFT))
-	{
-		moveDir = DIR_WEST;
-		checkMove = true;
-	}
+		game->moveTimer += dt;
+		game->animTimer += dt;
 
-	if (checkMove)
-	{
-		playerCol = actor_collides(game->actors, &game->actors[ACTOR_PLAYER], 
-									&game->dungeon.levels[game->current_floor].rooms[game->current_room], 
-									moveDir, 1.0f);
-		if(!playerCol.hit)
+		if (game->animTimer >= game->animInterval)
 		{
-			move_actor(&game->actors[ACTOR_PLAYER], moveDir, 1.0f);
+			game->animShift = !game->animShift;
+			game->animTimer = 0.0f;
 		}
-		else
-		{
-			if (playerCol.isActor)
-			{
 
+		if (IsKeyDown(KEY_UP) || IsKeyDown(KEY_DOWN) || IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_RIGHT) ||
+			IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_UP) || IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_DOWN) ||
+			IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_LEFT) || IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_RIGHT)) 
+		{
+    		if (game->moveTimer >= game->moveBuffer) 
+    		{
+        		if (IsKeyDown(KEY_UP) || IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_UP))
+        		{
+        		    moveDir = DIR_NORTH;
+        		}
+        		else if (IsKeyDown(KEY_DOWN) || IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_DOWN))  
+        		{
+        			moveDir = DIR_SOUTH;
+        		}
+        		else if (IsKeyDown(KEY_LEFT) || IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_LEFT))  
+        		{
+        			moveDir = DIR_WEST;
+        		}
+        		else if (IsKeyDown(KEY_RIGHT) || IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_RIGHT)) 
+        		{
+        			moveDir = DIR_EAST;
+        		}
+		
+        		checkMove = true;
+        		game->moveTimer = 0.0f;
+        		game->actors[ACTOR_PLAYER].dir = moveDir;
+        		game->actors[ACTOR_PLAYER].walkStep = !game->actors[ACTOR_PLAYER].walkStep;
+		    }
+		} 
+		else 
+		{
+		    game->moveTimer = game->moveBuffer; 
+		}
+	
+		if (checkMove)
+		{
+			playerCol = actor_collides(game->actors, &game->actors[ACTOR_PLAYER], 
+										&game->dungeon.levels[game->current_floor].rooms[game->current_room], 
+										moveDir, 1.0f);
+			if(!playerCol.hit)
+			{
+				move_actor(&game->actors[ACTOR_PLAYER], moveDir, 1.0f);
 			}
 			else
 			{
-				switch(playerCol.id)
+				if (playerCol.isActor)
 				{
-				case TILE_DOORV_TL:
-				case TILE_DOORV_TR:
-					move_actor(&game->actors[ACTOR_PLAYER], DIR_SOUTH, LEVEL_HEIGHT - 2);
-					game->current_room = game->dungeon.levels[game->current_floor].rooms[game->current_room].doors[DIR_NORTH].connectedRoom;
-					game->dungeon.levels[game->current_floor].rooms[game->current_room].visible = true;
-					break;
-				case TILE_DOORV_BL:
-				case TILE_DOORV_BR:
-					move_actor(&game->actors[ACTOR_PLAYER], DIR_NORTH, LEVEL_HEIGHT - 2);
-					game->current_room = game->dungeon.levels[game->current_floor].rooms[game->current_room].doors[DIR_SOUTH].connectedRoom;
-					game->dungeon.levels[game->current_floor].rooms[game->current_room].visible = true;
-					break;
-				case TILE_DOORH_LC:
-					move_actor(&game->actors[ACTOR_PLAYER], DIR_EAST, LEVEL_WIDTH - 3);
-					game->current_room = game->dungeon.levels[game->current_floor].rooms[game->current_room].doors[DIR_WEST].connectedRoom;
-					game->dungeon.levels[game->current_floor].rooms[game->current_room].visible = true;
-					break;
-				case TILE_DOORH_RC:
-					move_actor(&game->actors[ACTOR_PLAYER], DIR_WEST, LEVEL_WIDTH - 3);
-					game->current_room = game->dungeon.levels[game->current_floor].rooms[game->current_room].doors[DIR_EAST].connectedRoom;
-					game->dungeon.levels[game->current_floor].rooms[game->current_room].visible = true;
-					break;
-				case TILE_STAIRS_DOWN:
-					if (game->current_floor < game->dungeon.numLevels)
+	
+				}
+				else
+				{
+					switch(playerCol.id)
 					{
-						game->current_floor++;
-						game->current_room = game->dungeon.levels[game->current_floor].startRoom;
-						game->actors[ACTOR_PLAYER].position = (Vector2) {START_X, START_Y};
+					case TILE_DOORV_TL:
+					case TILE_DOORV_TR:
+						move_actor(&game->actors[ACTOR_PLAYER], DIR_SOUTH, LEVEL_HEIGHT - 2);
+						game->current_room = game->dungeon.levels[game->current_floor].rooms[game->current_room].doors[DIR_NORTH].connectedRoom;
+						game->dungeon.levels[game->current_floor].rooms[game->current_room].visible = true;
+						break;
+					case TILE_DOORV_BL:
+					case TILE_DOORV_BR:
+						move_actor(&game->actors[ACTOR_PLAYER], DIR_NORTH, LEVEL_HEIGHT - 2);
+						game->current_room = game->dungeon.levels[game->current_floor].rooms[game->current_room].doors[DIR_SOUTH].connectedRoom;
+						game->dungeon.levels[game->current_floor].rooms[game->current_room].visible = true;
+						break;
+					case TILE_DOORH_LC:
+						move_actor(&game->actors[ACTOR_PLAYER], DIR_EAST, LEVEL_WIDTH - 3);
+						game->current_room = game->dungeon.levels[game->current_floor].rooms[game->current_room].doors[DIR_WEST].connectedRoom;
+						game->dungeon.levels[game->current_floor].rooms[game->current_room].visible = true;
+						break;
+					case TILE_DOORH_RC:
+						move_actor(&game->actors[ACTOR_PLAYER], DIR_WEST, LEVEL_WIDTH - 3);
+						game->current_room = game->dungeon.levels[game->current_floor].rooms[game->current_room].doors[DIR_EAST].connectedRoom;
+						game->dungeon.levels[game->current_floor].rooms[game->current_room].visible = true;
+						break;
+					case TILE_STAIRS_DOWN:
+						if (game->current_floor < game->dungeon.numLevels)
+						{
+							game->current_floor++;
+							game->current_room = game->dungeon.levels[game->current_floor].startRoom;
+							game->actors[ACTOR_PLAYER].position = (Vector2) {START_X, START_Y};
+						}
+						break;
+					case TILE_STAIRS_UP:
+						if (game->current_floor > 0)
+						{
+							game->current_floor--;
+							game->current_room = game->dungeon.levels[game->current_floor].endRoom;
+							game->actors[ACTOR_PLAYER].position = (Vector2) {START_X - 2, START_Y};
+						}
+						break;
+					default:
+						break;
 					}
-					break;
-				case TILE_STAIRS_UP:
-					if (game->current_floor > 0)
-					{
-						game->current_floor--;
-						game->current_room = game->dungeon.levels[game->current_floor].endRoom;
-						game->actors[ACTOR_PLAYER].position = (Vector2) {START_X - 2, START_Y};
-					}
-					break;
-				default:
-					break;
 				}
 			}
 		}
-	}
 
 		break;
 	case STATE_MAP:
@@ -148,14 +169,41 @@ int render(ng_game* game)
 	case STATE_MENU:
 		break;
 	case STATE_PLAY:
-		draw_room(game->dungeon.levels[game->current_floor].rooms[game->current_room], game->tileset);
+		draw_room(game->dungeon.levels[game->current_floor].rooms[game->current_room], game->tileset, game->animShift);
 
-		draw_tile(game->actors[ACTOR_PLAYER].spriteId,
+		int playerSprite = game->actors[ACTOR_PLAYER].spriteId;
+		int playerDir = game->actors[ACTOR_PLAYER].dir;
+		bool playerFlip = game->actors[ACTOR_PLAYER].walkStep;
+
+		if (playerDir == DIR_NORTH)
+		{
+			playerSprite += PLAYER_FRAME_N;
+		}
+		else if (playerDir == DIR_WEST)
+		{
+			if(playerFlip)
+				playerSprite += PLAYER_FRAME_W2;
+			else
+				playerSprite += PLAYER_FRAME_W1;
+
+			playerFlip = false; // don't actually flip the sprite, facing left
+		}
+		else if (playerDir == DIR_EAST)
+		{
+			if(playerFlip)
+				playerSprite += PLAYER_FRAME_W2;
+			else
+				playerSprite += PLAYER_FRAME_W1;
+
+			playerFlip = true; // facing right, always flip
+		}
+
+		draw_tile(playerSprite,
 				 game->actors[ACTOR_PLAYER].position.x, game->actors[ACTOR_PLAYER].position.y, 
-				 false, false, game->spriteSheet, WHITE);
+				 playerFlip, false, game->playerSheet, WHITE);
 		break;
 	case STATE_MAP:
-		draw_map(game->dungeon.levels[game->current_floor], game->tileset);
+		draw_map(game->current_room, game->dungeon.levels[game->current_floor], game->tileset);
 		print_string(TextFormat("FLOOR %d", game->current_floor + 1), 0, 17, 8, game->mainFont, WHITE);
 		break;
 	default:
@@ -179,12 +227,22 @@ ng_game* init_game(const char* title, int virtualWidth, int virtualHeight)
 
 	newGame->spriteSheet = load_tileset("assets/actors_16px.png", 16);
 
+	newGame->playerSheet = load_tileset("assets/players_16px.png", 16);
+
 	newGame->state = STATE_PLAY;
+	newGame->moveTimer = 0.0f;
+	newGame->moveBuffer = 0.15f;
+
+	newGame->animTimer = 0.0f;
+	newGame->animInterval = 0.5f;
+	newGame->animShift = false;
 
 	newGame->actors[ACTOR_PLAYER].id = ACTOR_PLAYER;
 	newGame->actors[ACTOR_PLAYER].spriteId = 0;
 	newGame->actors[ACTOR_PLAYER].position = (Vector2){START_X, START_Y};
 	newGame->actors[ACTOR_PLAYER].isPlayer = true;
+	newGame->actors[ACTOR_PLAYER].dir = DIR_SOUTH;
+	newGame->actors[ACTOR_PLAYER].walkStep = false;
 	newGame->actors[ACTOR_PLAYER].stats = generate_stats(1, 1, 1, 0);
 	name_actor(&newGame->actors[ACTOR_PLAYER], "NAME");
 
@@ -239,6 +297,9 @@ int run_game(ng_game* game)
 void exit_game(ng_game* game, int exitCode)
 {
 	unload_bmpfont(game->mainFont);
+	unload_tileset(game->tileset);
+	unload_tileset(game->spriteSheet);
+	unload_tileset(game->playerSheet);
 	CloseWindow();
 
 	free(game);

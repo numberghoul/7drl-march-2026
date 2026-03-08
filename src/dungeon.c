@@ -229,8 +229,10 @@ void generate_dungeon(ng_dungeon* dungeon, int levels)
 		dungeon->levels[i].id = i;
 	}
 
+	// Regenerate floor 0 start room to have no stairs
 	ng_room startCopy = dungeon->levels[0].rooms[dungeon->levels[0].startRoom];
 	dungeon->levels[0].rooms[dungeon->levels[0].startRoom] = generate_room(0, true, false);
+	dungeon->levels[0].rooms[dungeon->levels[0].startRoom].visible = true;
 
 	for (int i = 0; i < 4; i++)
 	{

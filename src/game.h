@@ -20,7 +20,7 @@
 #define MAX_ACTORS_ROOM 16
 #define MAX_ACTORS MAX_ACTORS_ROOM * MAX_LEVELS * MAX_ROOMS
 
-#define PREFAB_COUNT 1
+#define PREFAB_COUNT 3
 
 #define MAX_MSG_WIDTH 7 // includes null char
 
@@ -51,6 +51,7 @@
 #define MAP_DOORH 51
 #define MAP_DOWN 16
 #define MAP_UP 32
+#define MAP_POS 64
 
 #define TILE_DOORV_TL 52
 #define TILE_DOORV_TR 53
@@ -68,6 +69,7 @@
 
 #define TILE_FLOOR 18
 #define TILE_PILLAR 48
+#define TILE_LAVA 65
 
 #define TILE_STAIRS_DOWN 66
 #define TILE_STAIRS_UP 67
@@ -78,6 +80,19 @@
 
 // Reserved actor IDs
 #define ACTOR_PLAYER 0
+
+// Player sprite frame mods
+#define PLAYER_FRAME_S 0
+#define PLAYER_FRAME_N 1
+#define PLAYER_FRAME_W1 2
+#define PLAYER_FRAME_W2 3
+
+// Monster IDs for both sprite and data
+#define NUM_MONSTERS 4
+#define MON_GOBLIN 0
+#define MON_GHOST 1
+#define MON_EMBER 2
+#define MON_BAT 3
 
 #define STAT_MAX 20
 #define STAT_BASE_HP 3
@@ -170,6 +185,8 @@ typedef struct
 	char name[MAX_MSG_WIDTH];
 
 	bool isPlayer;
+	int dir;
+	bool walkStep;
 } ng_actor;
 
 typedef struct
@@ -226,8 +243,8 @@ int unload_tileset(ng_tileset tileset);
 void draw_tile(int id, int x, int y, bool flipX, bool flipY, ng_tileset tileset, Color color); // x and y scaled to print in grid space, use raylib WHITE for no shading
 void draw_tile_vec2(int id, Vector2 pos, bool flipX, bool flipY, ng_tileset tileset, Color color);
 
-void draw_room(ng_room room, ng_tileset tileset);
-void draw_map(ng_level level, ng_tileset tileset);
+void draw_room(ng_room room, ng_tileset tileset, bool animShift);
+void draw_map(int playerRoom, ng_level level, ng_tileset tileset);
 
 ng_renderer init_renderer(const char* title, int winWidth, int winHeight, int virtualWidth, int virtualHeight);
 
@@ -238,6 +255,7 @@ typedef struct {
 	ng_bmpfont mainFont;
 	ng_tileset tileset;
 	ng_tileset spriteSheet;
+	ng_tileset playerSheet;
 
 	ng_actor actors[MAX_ACTORS];
 
@@ -246,6 +264,12 @@ typedef struct {
 	int current_room;
 
 	int state;
+	float moveTimer;
+	float moveBuffer;
+
+	float animTimer;
+	float animInterval;
+	bool animShift;
 } ng_game;
 
 int update(ng_game* game, float dt);

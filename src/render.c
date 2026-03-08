@@ -138,18 +138,22 @@ void draw_tile_vec2(int id, Vector2 pos, bool flipX, bool flipY, ng_tileset tile
 	draw_tile(id, pos.x, pos.y, flipX, flipY, tileset, color);
 }
 
-void draw_room(ng_room room, ng_tileset tileset)
+void draw_room(ng_room room, ng_tileset tileset, bool animShift)
 {
 	for (int i = 0; i < MAX_TILES; i++)
 	{
 		int x = i % ROOM_WIDTH;
 		int y = i / ROOM_WIDTH;
 
-		draw_tile(room.tiles[i], x, y, false, false, tileset, WHITE);
+		int tile = room.tiles[i];
+		if(tile == TILE_LAVA && animShift)
+			tile += 16;
+
+		draw_tile(tile, x, y, false, false, tileset, WHITE);
 	}
 }
 
-void draw_map(ng_level level, ng_tileset tileset)
+void draw_map(int playerRoom, ng_level level, ng_tileset tileset)
 {
 	for (int y = 0; y < LEVEL_HEIGHT; y++)
 	{
@@ -160,6 +164,7 @@ void draw_map(ng_level level, ng_tileset tileset)
 
 			if(currentRoom.active && currentRoom.visible)
 			{
+				// stored this way from when the rooms were 2 wide, too lazy to change rn
 				int gridX = x;
 				int gridY = y;
 
@@ -189,6 +194,11 @@ void draw_map(ng_level level, ng_tileset tileset)
 					draw_tile(MAP_UP, gridX, gridY, false, false, tileset, WHITE);
 				if(currentRoom.end)
 					draw_tile(MAP_DOWN, gridX, gridY, false, false, tileset, WHITE);
+			}
+
+			if(roomIndex == playerRoom)
+			{
+				draw_tile(MAP_POS, x, y, false, false, tileset, WHITE);
 			}
 		}
 	}
