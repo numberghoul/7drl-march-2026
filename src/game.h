@@ -34,7 +34,7 @@
 #define VEC2_DOWN  (Vector2){0,  1}
 #define VEC2_LEFT  (Vector2){-1, 0}
 
-#define START_X 5
+#define START_X 6
 #define START_Y 4
 
 // Font IDs
@@ -67,6 +67,7 @@
 #define TILE_DOORH_RB 37
 
 #define TILE_FLOOR 18
+#define TILE_PILLAR 48
 
 #define TILE_STAIRS_DOWN 66
 #define TILE_STAIRS_UP 67

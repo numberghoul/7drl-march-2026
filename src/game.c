@@ -7,13 +7,12 @@
 
 int update(ng_game* game, float dt)
 {
-	if(IsKeyDown(KEY_M))
+	if(IsKeyPressed(KEY_M))
 	{
-		game->state = STATE_MAP;
-	}
-	else
-	{
-		game->state = STATE_PLAY;
+		if(game->state == STATE_PLAY)
+			game->state = STATE_MAP;
+		else
+			game->state = STATE_PLAY;
 	}
 
 	ng_collision playerCol;
@@ -78,17 +77,13 @@ int update(ng_game* game, float dt)
 					game->current_room = game->dungeon.levels[game->current_floor].rooms[game->current_room].doors[DIR_SOUTH].connectedRoom;
 					game->dungeon.levels[game->current_floor].rooms[game->current_room].visible = true;
 					break;
-				case TILE_DOORH_LT:
 				case TILE_DOORH_LC:
-				case TILE_DOORH_LB:
-					move_actor(&game->actors[ACTOR_PLAYER], DIR_EAST, LEVEL_HEIGHT - 2);
+					move_actor(&game->actors[ACTOR_PLAYER], DIR_EAST, LEVEL_WIDTH - 3);
 					game->current_room = game->dungeon.levels[game->current_floor].rooms[game->current_room].doors[DIR_WEST].connectedRoom;
 					game->dungeon.levels[game->current_floor].rooms[game->current_room].visible = true;
 					break;
-				case TILE_DOORH_RT:
 				case TILE_DOORH_RC:
-				case TILE_DOORH_RB:
-					move_actor(&game->actors[ACTOR_PLAYER], DIR_WEST, LEVEL_HEIGHT - 2);
+					move_actor(&game->actors[ACTOR_PLAYER], DIR_WEST, LEVEL_WIDTH - 3);
 					game->current_room = game->dungeon.levels[game->current_floor].rooms[game->current_room].doors[DIR_EAST].connectedRoom;
 					game->dungeon.levels[game->current_floor].rooms[game->current_room].visible = true;
 					break;
@@ -105,7 +100,7 @@ int update(ng_game* game, float dt)
 					{
 						game->current_floor--;
 						game->current_room = game->dungeon.levels[game->current_floor].endRoom;
-						game->actors[ACTOR_PLAYER].position = (Vector2) {START_X, START_Y};
+						game->actors[ACTOR_PLAYER].position = (Vector2) {START_X - 2, START_Y};
 					}
 					break;
 				default:
@@ -161,15 +156,13 @@ int render(ng_game* game)
 		break;
 	case STATE_MAP:
 		draw_map(game->dungeon.levels[game->current_floor], game->tileset);
+		print_string(TextFormat("FLOOR %d", game->current_floor + 1), 0, 17, 8, game->mainFont, WHITE);
 		break;
 	default:
 		printf("invalid game state");
 		return INVALID_STATE;
 		break;
 	}
-
-	//print_string("--------", 12*16, 0, game.mainFont.charWidth, game.mainFont, PURPLE);
-	
 
 	return 0;
 }

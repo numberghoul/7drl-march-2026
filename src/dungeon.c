@@ -228,4 +228,35 @@ void generate_dungeon(ng_dungeon* dungeon, int levels)
 		dungeon->levels[i] = generate_level(difficulty);
 		dungeon->levels[i].id = i;
 	}
+
+	ng_room startCopy = dungeon->levels[0].rooms[dungeon->levels[0].startRoom];
+	dungeon->levels[0].rooms[dungeon->levels[0].startRoom] = generate_room(0, true, false);
+
+	for (int i = 0; i < 4; i++)
+	{
+    	dungeon->levels[0].rooms[dungeon->levels[0].startRoom].doors[i] = startCopy.doors[i];
+	}
+
+    if (dungeon->levels[0].rooms[dungeon->levels[0].startRoom].doors[DIR_NORTH].active)
+	{
+		dungeon->levels[0].rooms[dungeon->levels[0].startRoom].tiles[coord_index(5, 0, LEVEL_WIDTH)] = TILE_DOORV_TL;
+		dungeon->levels[0].rooms[dungeon->levels[0].startRoom].tiles[coord_index(6, 0, LEVEL_WIDTH)] = TILE_DOORV_TR;
+	}
+	if (dungeon->levels[0].rooms[dungeon->levels[0].startRoom].doors[DIR_SOUTH].active)
+	{
+		dungeon->levels[0].rooms[dungeon->levels[0].startRoom].tiles[coord_index(5, 8, LEVEL_WIDTH)] = TILE_DOORV_BL;
+		dungeon->levels[0].rooms[dungeon->levels[0].startRoom].tiles[coord_index(6, 8, LEVEL_WIDTH)] = TILE_DOORV_BR;
+	}
+	if (dungeon->levels[0].rooms[dungeon->levels[0].startRoom].doors[DIR_WEST].active)
+	{
+		dungeon->levels[0].rooms[dungeon->levels[0].startRoom].tiles[coord_index(0, 3, LEVEL_WIDTH)] = TILE_DOORH_LT;
+		dungeon->levels[0].rooms[dungeon->levels[0].startRoom].tiles[coord_index(0, 4, LEVEL_WIDTH)] = TILE_DOORH_LC;
+		dungeon->levels[0].rooms[dungeon->levels[0].startRoom].tiles[coord_index(0, 5, LEVEL_WIDTH)] = TILE_DOORH_LB;
+	}
+	if (dungeon->levels[0].rooms[dungeon->levels[0].startRoom].doors[DIR_EAST].active)
+	{
+		dungeon->levels[0].rooms[dungeon->levels[0].startRoom].tiles[coord_index(11, 3, LEVEL_WIDTH)] = TILE_DOORH_RT;
+		dungeon->levels[0].rooms[dungeon->levels[0].startRoom].tiles[coord_index(11, 4, LEVEL_WIDTH)] = TILE_DOORH_RC;
+		dungeon->levels[0].rooms[dungeon->levels[0].startRoom].tiles[coord_index(11, 5, LEVEL_WIDTH)] = TILE_DOORH_RB;
+	}
 }

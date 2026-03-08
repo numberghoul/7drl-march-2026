@@ -18,3 +18,4 @@
 
 03-07-2026 2:38pm - Start, lets make some gameplay
 			7:22pm - Dungeon generating and traversable. Going to build on windows and have some friends try it out.
+			8:59pm - Made start and exit rooms clearer, fixed room transition bug
