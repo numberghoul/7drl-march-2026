@@ -45,6 +45,18 @@
 #define BOX_BOTLEFT 200
 #define BOX_BOTRIGHT 188
 
+#define BTN_ARROWS 254
+#define BTN_PRI 90
+#define BTN_SEC 88
+#define BTN_MAP 77
+#define BTN_PAUSE 248
+
+#define BTN_DPAD 249
+#define BTN_A 250
+#define BTN_B 251
+#define BTN_START 252
+#define BTN_SEL 253
+
 // Tile IDs
 #define MAP_ROOM 49
 #define MAP_DOORV 50
@@ -86,6 +98,7 @@
 #define PLAYER_FRAME_N 1
 #define PLAYER_FRAME_W1 2
 #define PLAYER_FRAME_W2 3
+#define PLAYER_SWORD 16
 
 // Monster IDs for both sprite and data
 #define NUM_MONSTERS 4
@@ -93,6 +106,8 @@
 #define MON_GHOST 1
 #define MON_EMBER 2
 #define MON_BAT 3
+
+#define MON_ERROR 255
 
 #define STAT_MAX 20
 #define STAT_BASE_HP 3
@@ -119,40 +134,6 @@ Vector2 index_vec2(int index, int width);
 Vector2 dir_vec2(int dir);
 int opposite_dir(int dir);
 
-// DUNGEON_C
-typedef struct {
-	bool active;
-	int connectedRoom;
-} ng_door;
-
-typedef struct {
-	int tiles[MAX_TILES];
-	ng_door doors[4];
-
-	int actors[MAX_ACTORS_ROOM];
-
-	bool active;
-	bool visible;
-	bool start;
-	bool end;
-} ng_room;
-
-typedef struct {
-	ng_room rooms[MAX_ROOMS];
-	int id;
-	int startRoom;
-	int endRoom;
-} ng_level;
-
-typedef struct {
-	ng_level levels[MAX_LEVELS];
-	int numLevels;
-} ng_dungeon;
-
-ng_room generate_room(int prefabId, bool start, bool end);
-ng_level generate_level(float difficulty); // between 0.0 and 1.0
-void generate_dungeon(ng_dungeon* dungeon, int levels); // less than MAX_LEVELS
-
 // COMBAT_C
 typedef struct
 {
@@ -174,9 +155,12 @@ typedef struct
 int get_stat_mod(int stat);
 ng_stats generate_stats(int str, int agi, int wis, int xpvalue);
 
-// ACTORS_C
+// ACTORS_C 
+// DUNGEON_C
+
 typedef struct
 {
+	bool alive;
 	int id;
 	int spriteId;
 	Vector2 position;
@@ -196,9 +180,46 @@ typedef struct
 	bool isActor;
 } ng_collision;
 
+typedef struct {
+	bool active;
+	int connectedRoom;
+} ng_door;
+
+typedef struct {
+	int tiles[MAX_TILES];
+	ng_door doors[4];
+
+	int actors[MAX_ACTORS_ROOM];
+
+	float difficulty;
+
+	bool active;
+	bool visible;
+	bool start;
+	bool end;
+} ng_room;
+
 void name_actor(ng_actor* actor, char* name);
+void spawn_monster(ng_actor* actors, int* nextActorId, int monId, int x, int y);
 void move_actor(ng_actor* actor, ng_dir dir, float speed);
 ng_collision actor_collides(ng_actor* actors, ng_actor* actor, ng_room* room, ng_dir dir, float speed); // returns id of collision
+
+typedef struct {
+	ng_room rooms[MAX_ROOMS];
+	int id;
+	int startRoom;
+	int endRoom;
+} ng_level;
+
+typedef struct {
+	ng_level levels[MAX_LEVELS];
+	int numLevels;
+} ng_dungeon;
+
+void populate_rooms(ng_dungeon* dungeon, ng_actor* actors, int* nextId);
+ng_room generate_room(int prefabId, bool start, bool end, float difficulty);
+ng_level generate_level(float difficulty); // between 0.0 and 1.0
+void generate_dungeon(ng_dungeon* dungeon, int levels); // less than MAX_LEVELS
 
 // RENDER_C
 
@@ -258,6 +279,7 @@ typedef struct {
 	ng_tileset playerSheet;
 
 	ng_actor actors[MAX_ACTORS];
+	int nextActorId;
 
 	ng_dungeon dungeon;
 	int current_floor;
@@ -270,6 +292,14 @@ typedef struct {
 	float animTimer;
 	float animInterval;
 	bool animShift;
+
+	float attackTimer;
+	float attackCooldown;
+	float attackDuration;
+	bool attacking;
+	bool attackWait;
+
+	int promptA, promptB, promptSel, promptStart, promptPad;
 } ng_game;
 
 int update(ng_game* game, float dt);

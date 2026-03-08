@@ -5,7 +5,51 @@
 #include <string.h>
 #include <stdio.h>
 
-ng_room generate_room(int prefabId, bool start, bool end)
+void populate_rooms(ng_dungeon* dungeon, ng_actor* actors, int* nextId)
+{
+	for (int l = 0; l < dungeon->numLevels; l++)
+	{
+		for (int r = 0; r < MAX_ROOMS; r++)
+		{
+			if(dungeon->levels[l].rooms[r].active || (!dungeon->levels[l].rooms[r].start && l == 0))
+			{
+				int monsterMax = dungeon->levels[l].rooms[r].difficulty * MAX_ACTORS_ROOM;
+    			if (monsterMax < 1) monsterMax = 1;
+			
+    			int monsterCount = GetRandomValue(0, monsterMax);
+			
+    			for (int i = 0; i < monsterCount; i++)
+    			{
+    				dungeon->levels[l].rooms[r].actors[i] = *nextId;
+
+    				int monId = GetRandomValue(0, NUM_MONSTERS - 1);
+
+    				int testTile;
+    				Vector2 spawnPoint;
+    				int timeout = 0;
+    				bool found = false;
+
+    				do
+    				{
+    					int testTileId = GetRandomValue(0, MAX_TILES - 1);
+    					spawnPoint = index_vec2(testTileId, ROOM_WIDTH);
+    					testTile = dungeon->levels[l].rooms[r].tiles[testTileId];
+    					if(testTile == TILE_FLOOR)
+    					{
+    						found = true;
+    					}
+
+    					timeout++;
+    				} while(!found && timeout < 32);
+    				if(found)
+    					spawn_monster(actors, nextId, monId, spawnPoint.x, spawnPoint.y);
+    			}
+			}
+		}
+	}
+}
+
+ng_room generate_room(int prefabId, bool start, bool end, float difficulty)
 {
     ng_room newRoom = { 0 }; 
     char* prefabData = LoadFileText(TextFormat("assets/rooms/%d.csv", prefabId));
@@ -46,6 +90,8 @@ ng_room generate_room(int prefabId, bool start, bool end)
     	newRoom.actors[i] = -1;
     }
 
+    newRoom.difficulty = difficulty;
+
     newRoom.active = true;
     newRoom.visible = false;
     newRoom.start = start;
@@ -72,7 +118,7 @@ ng_level generate_level(float difficulty)
 	int currentRoom = startRoom;
 
 	roomsCreated[0] = currentRoom;
-	newLevel.rooms[currentRoom] = generate_room(ROOM_START, true, false);
+	newLevel.rooms[currentRoom] = generate_room(ROOM_START, true, false, difficulty);
 	newLevel.rooms[currentRoom].visible = true;
 	Vector2 position = index_vec2(currentRoom, LEVEL_WIDTH);
 
@@ -113,7 +159,7 @@ ng_level generate_level(float difficulty)
 				newLevel.rooms[currentRoom].doors[checkDir].active = true;
 				newLevel.rooms[currentRoom].doors[checkDir].connectedRoom = checkRoom;
 
-				newLevel.rooms[checkRoom] = generate_room(GetRandomValue(0, PREFAB_COUNT - 1), false, false);
+				newLevel.rooms[checkRoom] = generate_room(GetRandomValue(0, PREFAB_COUNT - 1), false, false, difficulty);
 				newLevel.rooms[checkRoom].doors[opposite_dir(checkDir)].active = true;
 				newLevel.rooms[checkRoom].doors[opposite_dir(checkDir)].connectedRoom = currentRoom;
 
@@ -143,7 +189,7 @@ ng_level generate_level(float difficulty)
     }
 
     ng_room endCopy = newLevel.rooms[furthestRoom];
-    newLevel.rooms[furthestRoom] = generate_room(ROOM_END, false, true);
+    newLevel.rooms[furthestRoom] = generate_room(ROOM_END, false, true, difficulty);
 
     for (int i = 0; i < 4; i++)
     	newLevel.rooms[furthestRoom].doors[i] = endCopy.doors[i];
@@ -231,7 +277,7 @@ void generate_dungeon(ng_dungeon* dungeon, int levels)
 
 	// Regenerate floor 0 start room to have no stairs
 	ng_room startCopy = dungeon->levels[0].rooms[dungeon->levels[0].startRoom];
-	dungeon->levels[0].rooms[dungeon->levels[0].startRoom] = generate_room(0, true, false);
+	dungeon->levels[0].rooms[dungeon->levels[0].startRoom] = generate_room(0, true, false, 0.0f);
 	dungeon->levels[0].rooms[dungeon->levels[0].startRoom].visible = true;
 
 	for (int i = 0; i < 4; i++)

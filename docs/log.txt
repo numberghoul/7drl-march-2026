@@ -19,3 +19,5 @@
 03-07-2026 2:38pm - Start, lets make some gameplay
 			7:22pm - Dungeon generating and traversable. Going to build on windows and have some friends try it out.
 			8:59pm - Made start and exit rooms clearer, fixed room transition bug
+
+			6:30am - have to tap out. It will exist at this stage as a proof of concept, although no enemy AI was able to get made. I'll likely finish this up just out of my own satisfaction.

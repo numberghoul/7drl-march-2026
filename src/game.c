@@ -7,7 +7,7 @@
 
 int update(ng_game* game, float dt)
 {
-	if(IsKeyPressed(KEY_M))
+	if(IsKeyPressed(KEY_M) || IsGamepadButtonDown(0, GAMEPAD_BUTTON_MIDDLE_LEFT))
 	{
 		if(game->state == STATE_PLAY)
 			game->state = STATE_MAP;
@@ -27,6 +27,42 @@ int update(ng_game* game, float dt)
 		game->moveTimer += dt;
 		game->animTimer += dt;
 
+		if(game->attackWait)
+			game->attackCooldown += dt;
+
+		if(game->attacking)
+			game->attackTimer += dt;
+		else
+		{
+			if(IsKeyDown(KEY_Z) || IsGamepadButtonDown(0, GAMEPAD_BUTTON_RIGHT_FACE_DOWN))
+			{
+				if (!game->attackWait)
+				{
+					game->attacking = true;
+					ng_collision hit = actor_collides(game->actors, &game->actors[ACTOR_PLAYER],
+					 &game->dungeon.levels[game->current_floor].rooms[game->current_room], game->actors[ACTOR_PLAYER].dir, 1.0f);
+
+					if(hit.hit && hit.isActor)
+					{
+						game->actors[hit.id].alive = false;
+					}
+				}
+			}
+		}
+
+		if(game->attackTimer >= game->attackDuration)
+		{
+			game->attacking = false;
+			game->attackTimer = 0.0f;
+			game->attackWait = true;
+		}
+
+		if(game->attackCooldown >= game->attackDuration * 2)
+		{
+			game->attackCooldown = 0.0f;
+			game->attackWait = false;
+		}
+
 		if (game->animTimer >= game->animInterval)
 		{
 			game->animShift = !game->animShift;
@@ -37,7 +73,7 @@ int update(ng_game* game, float dt)
 			IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_UP) || IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_DOWN) ||
 			IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_LEFT) || IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_RIGHT)) 
 		{
-    		if (game->moveTimer >= game->moveBuffer) 
+    		if (game->moveTimer >= game->moveBuffer && !game->attacking) 
     		{
         		if (IsKeyDown(KEY_UP) || IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_UP))
         		{
@@ -80,7 +116,8 @@ int update(ng_game* game, float dt)
 			{
 				if (playerCol.isActor)
 				{
-	
+					if(!game->actors[playerCol.id].alive)
+						move_actor(&game->actors[ACTOR_PLAYER], moveDir, 1.0f);
 				}
 				else
 				{
@@ -158,7 +195,10 @@ int render(ng_game* game)
 		print_string(TextFormat("AGI %d", game->actors[ACTOR_PLAYER].stats.agility), 12 * 2 + 1, 6, 8, game->mainFont, WHITE);
 		print_string(TextFormat("WIS %d", game->actors[ACTOR_PLAYER].stats.wisdom), 12 * 2 + 1, 7, 8, game->mainFont, WHITE);
 
-		print_string(TextFormat("[M]Map", game->actors[ACTOR_PLAYER].stats.wisdom), 12 * 2 + 1, 9, 8, game->mainFont, WHITE);
+		print_string(TextFormat("[%c]Mov", (char)game->promptPad), 12 * 2 + 1, 9, 8, game->mainFont, WHITE);
+		print_string(TextFormat("[%c]Atk", (char)game->promptA), 12 * 2 + 1, 10, 8, game->mainFont, WHITE);
+		print_string(TextFormat("[%c]Map", (char)game->promptSel), 12 * 2 + 1, 11, 8, game->mainFont, WHITE);
+		//print_string(TextFormat("%d", game->attacking), 12 * 2 + 1, 12, 8, game->mainFont, WHITE);
 
 		print_string(TextFormat("LVL %d", game->actors[ACTOR_PLAYER].stats.level), 12 * 2 + 1, 15, 8, game->mainFont, WHITE);
 		print_string(TextFormat("XP %d", game->actors[ACTOR_PLAYER].stats.xp), 12 * 2 + 1, 16, 8, game->mainFont, WHITE);
@@ -171,9 +211,23 @@ int render(ng_game* game)
 	case STATE_PLAY:
 		draw_room(game->dungeon.levels[game->current_floor].rooms[game->current_room], game->tileset, game->animShift);
 
+		int actorCount = 0;
+		int actorId = game->dungeon.levels[game->current_floor].rooms[game->current_room].actors[actorCount];
+
+		while(actorId != -1)
+		{
+			Vector2 actorPos = game->actors[actorId].position;
+			if(game->actors[actorId].alive)
+				draw_tile(game->actors[actorId].spriteId, actorPos.x, actorPos.y, false, false, game->spriteSheet, WHITE);
+
+			actorCount++;
+			actorId = game->dungeon.levels[game->current_floor].rooms[game->current_room].actors[actorCount];
+		}
+
 		int playerSprite = game->actors[ACTOR_PLAYER].spriteId;
 		int playerDir = game->actors[ACTOR_PLAYER].dir;
 		bool playerFlip = game->actors[ACTOR_PLAYER].walkStep;
+		Vector2 playerPos = game->actors[ACTOR_PLAYER].position;
 
 		if (playerDir == DIR_NORTH)
 		{
@@ -201,6 +255,40 @@ int render(ng_game* game)
 		draw_tile(playerSprite,
 				 game->actors[ACTOR_PLAYER].position.x, game->actors[ACTOR_PLAYER].position.y, 
 				 playerFlip, false, game->playerSheet, WHITE);
+
+		if(game->attacking)
+		{
+			Vector2 swordPos;
+			bool flipX = false;
+			bool flipY = false;
+			int swordId = PLAYER_SWORD;
+			int offset = 1;
+			switch(playerDir)
+			{
+			case DIR_NORTH:
+				swordPos = Vector2Add(playerPos, VEC2_UP);
+				flipY = true;
+				swordId += 2;
+				offset = 16;
+				break;
+			case DIR_SOUTH:
+				swordPos = Vector2Add(playerPos, VEC2_DOWN);
+				swordId += 2;
+				offset = 16;
+				break;
+			case DIR_EAST:
+				swordPos = Vector2Add(playerPos, VEC2_RIGHT);
+				break;
+			case DIR_WEST:
+				swordPos = Vector2Add(playerPos, VEC2_LEFT);
+				flipX = true;
+				break;
+			default:
+				break;
+			}
+			draw_tile(swordId, playerPos.x, playerPos.y, flipX, flipY, game->playerSheet, WHITE);
+			draw_tile(swordId + offset, swordPos.x, swordPos.y, flipX, flipY, game->playerSheet, WHITE);
+		}
 		break;
 	case STATE_MAP:
 		draw_map(game->current_room, game->dungeon.levels[game->current_floor], game->tileset);
@@ -237,6 +325,12 @@ ng_game* init_game(const char* title, int virtualWidth, int virtualHeight)
 	newGame->animInterval = 0.5f;
 	newGame->animShift = false;
 
+	newGame->attackTimer = 0.0f;
+	newGame->attackCooldown = 0.0f;
+	newGame->attackDuration = .15f;
+	newGame->attacking = false;
+	newGame->attackWait = false;
+
 	newGame->actors[ACTOR_PLAYER].id = ACTOR_PLAYER;
 	newGame->actors[ACTOR_PLAYER].spriteId = 0;
 	newGame->actors[ACTOR_PLAYER].position = (Vector2){START_X, START_Y};
@@ -246,9 +340,29 @@ ng_game* init_game(const char* title, int virtualWidth, int virtualHeight)
 	newGame->actors[ACTOR_PLAYER].stats = generate_stats(1, 1, 1, 0);
 	name_actor(&newGame->actors[ACTOR_PLAYER], "NAME");
 
+	newGame->nextActorId = 1;
+
 	generate_dungeon(&newGame->dungeon, MAX_LEVELS); // will likely prompt at start
+	populate_rooms(&newGame->dungeon, newGame->actors, &newGame->nextActorId);
 	newGame->current_floor = 0;
 	newGame->current_room = newGame->dungeon.levels[newGame->current_floor].startRoom;
+
+	if (IsGamepadAvailable(0))
+	{
+		newGame->promptA = BTN_A;
+		newGame->promptB = BTN_B;
+		newGame->promptSel = BTN_SEL;
+		newGame->promptStart = BTN_START;
+		newGame->promptPad = BTN_DPAD;
+	}
+	else
+	{
+		newGame->promptA = BTN_PRI;
+		newGame->promptB = BTN_SEC;
+		newGame->promptSel = BTN_MAP;
+		newGame->promptStart = BTN_PAUSE;
+		newGame->promptPad = BTN_ARROWS;
+	}
 
 	return newGame;
 }

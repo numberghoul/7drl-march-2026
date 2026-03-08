@@ -14,6 +14,46 @@ void name_actor(ng_actor* actor, char* name)
 	}
 }
 
+void spawn_monster(ng_actor* actors, int* nextActorId, int monId, int x, int y)
+{
+	ng_actor monster;
+	monster.id = *nextActorId;
+	monster.spriteId = monId;
+	monster.position = (Vector2) {x, y};
+	monster.isPlayer = false;
+	monster.alive = true;
+
+
+	ng_stats monStats;
+	switch(monId)
+	{
+	case MON_GOBLIN:
+		monStats = generate_stats(10, 12, 6, 1);
+		name_actor(&monster, "GOBLIN");
+		break;
+	case MON_GHOST:
+		monStats = generate_stats(8, 11, 15, 10);
+		name_actor(&monster, "GHOST");
+		break;
+	case MON_EMBER:
+		monStats = generate_stats(5, 15, 16, 15);
+		name_actor(&monster, "EMBER");
+		break;
+	case MON_BAT:
+		monStats = generate_stats(8, 18, 2, 5);
+		name_actor(&monster, "BAT");
+		break;
+	default:
+		monster.spriteId = MON_ERROR;
+		monStats = generate_stats(1, 1, 1, 0);
+		name_actor(&monster, "ERROR");
+		break;
+	}
+
+	actors[*nextActorId] = monster;
+	(*nextActorId)++;
+}
+
 void move_actor(ng_actor* actor, ng_dir dir, float speed)
 {
 	Vector2 v2Dir = dir_vec2(dir);
