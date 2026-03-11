@@ -7,7 +7,16 @@
 
 int update(ng_game* game, float dt)
 {
-	if(IsKeyPressed(KEY_M) || IsGamepadButtonDown(0, GAMEPAD_BUTTON_MIDDLE_LEFT))
+	if (IsGamepadAvailable(0))
+	{
+		game->promptA = BTN_A;
+		game->promptB = BTN_B;
+		game->promptSel = BTN_SEL;
+		game->promptStart = BTN_START;
+		game->promptPad = BTN_DPAD;
+	}
+	
+	if(IsKeyPressed(KEY_M) || IsGamepadButtonPressed(0, GAMEPAD_BUTTON_MIDDLE_LEFT))
 	{
 		if(game->state == STATE_PLAY)
 			game->state = STATE_MAP;
@@ -18,6 +27,7 @@ int update(ng_game* game, float dt)
 	ng_collision playerCol;
 	bool checkMove = false;
 	int moveDir;
+	int lastDir = game->actors[ACTOR_PLAYER].dir;
 
 	switch (game->state)
 	{
@@ -73,34 +83,42 @@ int update(ng_game* game, float dt)
 			IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_UP) || IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_DOWN) ||
 			IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_LEFT) || IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_RIGHT)) 
 		{
-    		if (game->moveTimer >= game->moveBuffer && !game->attacking) 
-    		{
-        		if (IsKeyDown(KEY_UP) || IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_UP))
-        		{
-        		    moveDir = DIR_NORTH;
-        		}
-        		else if (IsKeyDown(KEY_DOWN) || IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_DOWN))  
-        		{
-        			moveDir = DIR_SOUTH;
-        		}
-        		else if (IsKeyDown(KEY_LEFT) || IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_LEFT))  
-        		{
-        			moveDir = DIR_WEST;
-        		}
-        		else if (IsKeyDown(KEY_RIGHT) || IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_RIGHT)) 
-        		{
-        			moveDir = DIR_EAST;
-        		}
-		
-        		checkMove = true;
-        		game->moveTimer = 0.0f;
-        		game->actors[ACTOR_PLAYER].dir = moveDir;
-        		game->actors[ACTOR_PLAYER].walkStep = !game->actors[ACTOR_PLAYER].walkStep;
-		    }
+			if (game->moveTimer >= game->moveBuffer && !game->attacking) 
+			{
+				if (IsKeyDown(KEY_UP) || IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_UP))
+				{
+					moveDir = DIR_NORTH;
+				}
+				else if (IsKeyDown(KEY_DOWN) || IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_DOWN))  
+				{
+					moveDir = DIR_SOUTH;
+				}
+				else if (IsKeyDown(KEY_LEFT) || IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_LEFT))  
+				{
+					moveDir = DIR_WEST;
+				}
+				else if (IsKeyDown(KEY_RIGHT) || IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_RIGHT)) 
+				{
+					moveDir = DIR_EAST;
+				}
+
+				if (moveDir != lastDir)
+				{
+					checkMove = false;
+				}
+				else
+				{
+					checkMove = true;
+					game->actors[ACTOR_PLAYER].walkStep = !game->actors[ACTOR_PLAYER].walkStep;
+				}
+
+				game->actors[ACTOR_PLAYER].dir = moveDir;
+				game->moveTimer = 0.0f;
+			}
 		} 
 		else 
 		{
-		    game->moveTimer = game->moveBuffer; 
+			game->moveTimer = game->moveBuffer; 
 		}
 	
 		if (checkMove)

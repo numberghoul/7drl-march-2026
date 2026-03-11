@@ -21,3 +21,17 @@
 			8:59pm - Made start and exit rooms clearer, fixed room transition bug
 
 			6:30am - have to tap out. It will exist at this stage as a proof of concept, although no enemy AI was able to get made. I'll likely finish this up just out of my own satisfaction.
+
+			--------POST JAM--------
+
+03-08-2026 12:01pm - Starting to tweak based on some player feedback
+					MAIN TODO:
+					-Enemy AI
+					-Character creation
+					-Stat implementation
+					-Main menu
+
+					SECONDARY TODO:
+					-Ranged attacks
+					-Magic attacks
+					-Special items
